@@ -1,7 +1,7 @@
 from flask import Flask, make_response, jsonify, request, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask_cors import CORS  # Import CORS
+from flask_cors import CORS  
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -57,7 +57,7 @@ def index():
 def create_pet():
     data = request.get_json()
     if not data or 'name' not in data or 'species' not in data:
-        abort(400)  # Missing required fields
+        abort(400) 
     
     new_pet = Pet(name=data['name'], species=data['species'])
     db.session.add(new_pet)
