@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet and Book Directory</title>
+</head>
+<body>
+    <h1>Pet and Book Directory</h1>
+
+    <h2>Pets</h2>
+    <ul id="pet-list"></ul>
+
+    <h2>Books</h2>
+    <ul id="book-list"></ul>
+
+    <h3>Add Pet</h3>
+    <input type="text" id="pet-name" placeholder="Pet Name">
+    <input type="text" id="pet-species" placeholder="Species">
+    <button onclick="addPet()">Add Pet</button>
+
+    <h3>Add Book</h3>
+    <input type="text" id="book-title" placeholder="Book Title">
+    <input type="text" id="book-author" placeholder="Author">
+    <button onclick="addBook()">Add Book</button>
+
+    <script>
+        const petList = document.getElementById('pet-list');
+        const bookList = document.getElementById('book-list');
+    
+        async function fetchPets() {
+            const response = await fetch('http://127.0.0.1:5555/pets');
+            const pets = await response.json();
+            petList.innerHTML = pets.map(pet => `
+                <li>
+                    ${pet.name} (${pet.species}) 
+                    <button onclick="showUpdatePetForm(${pet.id})">Update</button>
+                    <button onclick="deletePet(${pet.id})">Delete</button>
+                </li>`).join('');
+        }
+    
+        async function fetchBooks() {
+            const response = await fetch('http://127.0.0.1:5555/books');
+            const books = await response.json();
+            bookList.innerHTML = books.map(book => `
+                <li>
+                    ${book.title} by ${book.author} 
+                    <button onclick="showUpdateBookForm(${book.id})">Update</button>
+                    <button onclick="deleteBook(${book.id})">Delete</button>
+                </li>`).join('');
+        }
+    
+        async function addPet() {
+            const name = document.getElementById('pet-name').value;
+            const species = document.getElementById('pet-species').value;
+            await fetch('http://127.0.0.1:5555/pets', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, species })
+            });
+            fetchPets(); // Refresh list
+        }
+    
+        async function addBook() {
+            const title = document.getElementById('book-title').value;
+            const author = document.getElementById('book-author').value;
+            await fetch('http://127.0.0.1:5555/books', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ title, author })
+            });
+            fetchBooks(); // Refresh list
+        }
+    
+        async function showUpdatePetForm(id) {
+            const name = prompt("Enter new name for the pet:");
+            const species = prompt("Enter new species for the pet:");
+            if (name && species) {
+                await fetch(`http://127.0.0.1:5555/pets/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, species })
+                });
+                fetchPets(); // Refresh list
+            }
+        }
+    
+        async function showUpdateBookForm(id) {
+            const title = prompt("Enter new title for the book:");
+            const author = prompt("Enter new author for the book:");
+            if (title && author) {
+                await fetch(`http://127.0.0.1:5555/books/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ title, author })
+                });
+                fetchBooks(); // Refresh list
+            }
+        }
+    
+        async function deletePet(id) {
+            if (confirm("Are you sure you want to delete this pet?")) {
+                try {
+                    const response = await fetch(`http://127.0.0.1:5555/pets/${id}`, {
+                        method: 'DELETE',
+                    });
+    
+                    if (response.ok) {
+                        fetchPets(); // Refresh the pet list
+                    } else {
+                        const text = await response.text();
+                        alert(`Failed to delete pet: ${text}`);
+                    }
+                } catch (error) {
+                    console.error('Error deleting pet:', error);
+                    alert('An error occurred while deleting the pet.');
+                }
+            }
+        }
+    
+        async function deleteBook(id) {
+            if (confirm("Are you sure you want to delete this book?")) {
+                try {
+                    const response = await fetch(`http://127.0.0.1:5555/books/${id}`, {
+                        method: 'DELETE',
+                    });
+    
+                    if (response.ok) {
+                        fetchBooks(); // Refresh the book list
+                    } else {
+                        const text = await response.text();
+                        alert(`Failed to delete book: ${text}`);
+                    }
+                } catch (error) {
+                    console.error('Error deleting book:', error);
+                    alert('An error occurred while deleting the book.');
+                }
+            }
+        }
+    
+        // Initial fetch
+        fetchPets();
+        fetchBooks();
+    </script>
+    
+</body>
+</html>
